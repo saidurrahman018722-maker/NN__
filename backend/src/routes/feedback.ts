@@ -27,7 +27,7 @@ router.post('/feedback', async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     console.error('Error saving feedback:', error);
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
+      res.status(400).json({ error: (error as any).errors });
     } else {
       res.status(500).json({ error: 'Internal server error' });
     }
