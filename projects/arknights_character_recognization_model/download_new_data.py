@@ -4,8 +4,9 @@ import os
 import uuid
 from pathlib import Path
 
-# IMPORTANT: Change this URL to your live Render backend URL when you run this!
-API_BASE_URL = "http://localhost:3000/api"
+# IMPORTANT: Change this URL to your live Render backend URL!
+# Example: API_BASE_URL = "https://arknights-backend.onrender.com/api"
+API_BASE_URL = "https://arknights-backend.onrender.com/api" 
 
 def main():
     print("Fetching new verified training data from server...")
