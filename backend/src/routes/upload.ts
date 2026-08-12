@@ -30,7 +30,7 @@ const uploadSchema = z.object({
     originalname: z.string(),
     mimetype: z.string(),
     size: z.number().max(5 * 1024 * 1024, 'File too large'),
-  }, { invalid_type_error: "File is required" }),
+  }, { message: "File is required" }),
 });
 
 router.post('/upload', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
@@ -90,7 +90,7 @@ router.post('/upload', upload.single('image'), async (req: Request, res: Respons
   } catch (error: any) {
     console.error('Error during upload/prediction:', error.message || error);
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error.errors });
+      res.status(400).json({ error: (error as any).errors });
     } else {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }

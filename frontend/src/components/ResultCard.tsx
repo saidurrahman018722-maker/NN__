@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Sparkles, User, FileText } from 'lucide-react';
+import { Shield, Sparkles, FileText } from 'lucide-react';
 
 interface Character {
   id: number;
