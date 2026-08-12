@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, Image as ImageIcon, Loader2 } from 'lucide-react';
 
@@ -10,8 +10,16 @@ interface UploadZoneProps {
 export const UploadZone: React.FC<UploadZoneProps> = ({ onUpload, isLoading }) => {
   const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[], event: any) => {
     setError(null);
+    
+    if (acceptedFiles.length === 0 && rejectedFiles.length === 0) {
+      if (event.dataTransfer && (event.dataTransfer.getData('text/html') || event.dataTransfer.getData('text/uri-list'))) {
+        setError('Cannot drag directly from other websites. Please Right-Click -> "Copy Image" and paste (Ctrl+V) it here, or save it to your computer first.');
+        return;
+      }
+    }
+
     if (rejectedFiles.length > 0) {
       setError('Please upload a valid image file under 5MB.');
       return;
@@ -20,6 +28,32 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUpload, isLoading }) =
       onUpload(acceptedFiles[0]);
     }
   }, [onUpload]);
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (isLoading) return;
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            if (file) {
+              e.preventDefault();
+              if (file.size > 5 * 1024 * 1024) {
+                setError('Pasted image is too large (Max 5MB).');
+                return;
+              }
+              onUpload(file);
+              return;
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste as any);
+    return () => window.removeEventListener('paste', handlePaste as any);
+  }, [onUpload, isLoading]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
