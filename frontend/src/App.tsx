@@ -15,6 +15,7 @@ function App() {
   const [result, setResult] = useState<Character | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   // Prevent browser's default behavior of opening files when dropped outside the dropzone
   useEffect(() => {
@@ -34,10 +35,18 @@ function App() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+    setImageBase64(null);
 
     // Create a preview URL for the image
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
+
+    // Convert file to base64 for potential feedback submission
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
 
     const formData = new FormData();
     formData.append('image', file);
@@ -104,6 +113,7 @@ function App() {
         ) : (
           <ResultCard 
             imagePreviewUrl={previewUrl!} 
+            imageBase64={imageBase64}
             character={result} 
             onReset={handleReset} 
           />
