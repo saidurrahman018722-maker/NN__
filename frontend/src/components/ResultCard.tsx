@@ -35,6 +35,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ imagePreviewUrl, imageBa
       await axios.post(`${apiUrl}/api/feedback`, {
         correctCharacter: isCorrect ? character.name : correctName,
         predictedCharacter: character.name,
+        isCorrect: isCorrect,
         imageData: imageBase64
       });
       setFeedbackStatus('success');

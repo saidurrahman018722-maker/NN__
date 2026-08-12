@@ -8,17 +8,19 @@ const prisma = new PrismaClient();
 const feedbackSchema = z.object({
   correctCharacter: z.string().min(1),
   predictedCharacter: z.string().min(1),
+  isCorrect: z.boolean(),
   imageData: z.string().min(1) // Base64 string
 });
 
 router.post('/feedback', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { correctCharacter, predictedCharacter, imageData } = feedbackSchema.parse(req.body);
+    const { correctCharacter, predictedCharacter, isCorrect, imageData } = feedbackSchema.parse(req.body);
 
     const feedback = await prisma.feedback.create({
       data: {
         correctCharacter,
         predictedCharacter,
+        isCorrect,
         imageData
       }
     });
@@ -38,7 +40,7 @@ router.post('/feedback', async (req: Request, res: Response): Promise<void> => {
 router.get('/feedback/download', async (req: Request, res: Response): Promise<void> => {
   try {
     const newFeedback = await prisma.feedback.findMany({
-      where: { processed: false }
+      where: { isDownloaded: false }
     });
     res.json(newFeedback);
   } catch (error) {
@@ -57,7 +59,7 @@ router.post('/feedback/mark-processed', async (req: Request, res: Response): Pro
     
     await prisma.feedback.updateMany({
       where: { id: { in: ids } },
-      data: { processed: true }
+      data: { isDownloaded: true }
     });
     
     res.json({ success: true });

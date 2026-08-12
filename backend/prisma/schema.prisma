@@ -20,7 +20,8 @@ model Feedback {
   id                 Int      @id @default(autoincrement())
   correctCharacter   String
   predictedCharacter String
-  imageData          String   // We will store the base64 string
-  processed          Boolean  @default(false)
+  isCorrect          Boolean  @default(true) // Tracks whether the prediction was correct
+  imageData          String   // Base64 image
+  isDownloaded       Boolean  @default(false) // Tracks if Python script has downloaded it for training
   createdAt          DateTime @default(now())
 }
