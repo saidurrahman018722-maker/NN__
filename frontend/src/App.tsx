@@ -29,8 +29,8 @@ function App() {
     formData.append('image', file);
 
     try {
-      // Use relative path since frontend and backend will be served from same origin in Docker
-      const response = await axios.post('/api/upload', formData, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await axios.post(`${apiUrl}/api/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
