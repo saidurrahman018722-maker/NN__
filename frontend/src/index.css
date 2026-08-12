@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ark-dark: #1a1a1a;
+  --color-ark-gray: #2d2d2d;
+  --color-ark-blue: #0099ff;
+  --color-ark-accent: #ffcc00;
+}
+
+body {
+  background-color: var(--color-ark-dark);
+  color: white;
+  font-family: 'Inter', system-ui, sans-serif;
+}
