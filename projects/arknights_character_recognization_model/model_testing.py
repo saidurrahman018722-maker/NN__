@@ -8,43 +8,36 @@ import torchvision.transforms as transforms
 from pathlib import Path
 import torch.nn as nn
 
-
-# Assuming model, train_dataset, and test_data are already defined earlier
-
 mean = (0.485, 0.456, 0.406)
 std = (0.229, 0.224, 0.225)
 
-train_transform = transforms.Compose([
-    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
-    transforms.RandomHorizontalFlip(),
-    transforms.ColorJitter(brightness=0.1, contrast=0.1),
-    transforms.RandomRotation(15),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=mean, std=std)
-])
-
 val_transform = transforms.Compose([
-    transforms.Resize((224, 224)),
+    transforms.Resize((256, 256)),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=mean, std=std)
 ])
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-
 TRAIN_DIR = SCRIPT_DIR / "arknights_dataset" / "train"
 VAL_DIR = SCRIPT_DIR / "arknights_dataset" / "val"
 
-
-train_dataset = datasets.ImageFolder(
-    root=str(TRAIN_DIR), transform=train_transform)
+train_dataset = datasets.ImageFolder(root=str(TRAIN_DIR))
 test_dataset = datasets.ImageFolder(root=str(VAL_DIR), transform=val_transform)
-
-model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-model.fc = nn.Linear(model.fc.in_features, len(train_dataset.classes))
-
-model.load_state_dict(torch.load("arknight_character_recognization_model.pth"))
-
 classes_name = train_dataset.classes
+
+model = models.resnet18(weights=None)
+
+num_features = model.fc.in_features
+num_classes = len(classes_name)
+
+model.fc = nn.Sequential(
+    nn.Dropout(p=0.4),
+    nn.Linear(num_features, num_classes)
+)
+
+model.load_state_dict(torch.load(
+    "arknight_character_recognization_model.pth", map_location=torch.device('cpu')))
 
 
 def predicting_images(model, images):
@@ -62,35 +55,34 @@ def predicting_images(model, images):
 sample_images = []
 targets = []
 
-
 for sample, target in random.sample(list(test_dataset), 4):
     sample_images.append(sample)
     targets.append(target)
 
-# Get the predicted name using our new function
 predictions = predicting_images(model, sample_images)
-print('The predictions are:', predictions)
+print('The predictions are:', predictions.tolist())
 
 print(f"\n--- Prediction Test ---")
-
 for i in range(len(predictions)):
     print(f"The model guessed: {classes_name[predictions[i]]}")
     print(f"The actual image is: {classes_name[targets[i]]}")
 
-# Visualize Visualize Visualize!!!!
-
 mean_tensor = torch.tensor(mean).view(3, 1, 1)
 std_tensor = torch.tensor(std).view(3, 1, 1)
 
-plt.figure(figsize=(6, 6))
+plt.figure(figsize=(8, 8))
 nrow = 2
 ncol = 2
 
 for i, sample in enumerate(sample_images):
     plt.subplot(nrow, ncol, i+1)
+
     normalize_sample = (sample * std_tensor) + mean_tensor
+    normalize_sample = torch.clamp(normalize_sample, 0, 1)
+
     img = normalize_sample.permute(1, 2, 0).numpy()
     plt.imshow(img)
+
     predicted_name = classes_name[predictions[i]]
     true_name = classes_name[targets[i]]
 
@@ -99,6 +91,8 @@ for i, sample in enumerate(sample_images):
     else:
         title_color = 'red'
 
-    plt.title(f"Pred: {predicted_name} | True: {true_name}", color=title_color)
+    plt.title(f"Pred: {predicted_name}\nTrue: {true_name}", color=title_color)
     plt.axis('off')
+
+plt.tight_layout()
 plt.show()
