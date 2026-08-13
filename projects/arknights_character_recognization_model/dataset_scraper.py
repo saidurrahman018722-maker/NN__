@@ -46,7 +46,9 @@ def scrape_character(char_name, query):
     
     try:
         downloader.download(query, limit=needed, output_dir=str(BASE_DIR), adult_filter_off=True, force_replace=False, timeout=10, verbose=False)
-        
+    except Exception as e:
+        print(f"Error scraping {char_name}: {e}")
+    finally:
         # Bing image downloader creates a folder with the query name. 
         # We need to move those files to our target char_dir
         download_dir = BASE_DIR / query
@@ -56,12 +58,16 @@ def scrape_character(char_name, query):
                 # Handle filename collisions
                 if dest_path.exists():
                     dest_path = char_dir / f"bing_{i}_{f.name}"
-                f.rename(dest_path)
+                try:
+                    f.rename(dest_path)
+                except Exception as e:
+                    print(f"Failed to move {f.name}: {e}")
             
             # Remove empty directory
-            download_dir.rmdir()
-    except Exception as e:
-        print(f"Error scraping {char_name}: {e}")
+            try:
+                download_dir.rmdir()
+            except:
+                pass
 
 if __name__ == "__main__":
     for char_name, query in CHARACTERS.items():
