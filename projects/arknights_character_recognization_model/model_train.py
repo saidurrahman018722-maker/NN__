@@ -6,7 +6,8 @@ from torchmetrics import Accuracy
 import torch.optim as optim
 import torchvision.models as models
 from torchvision import datasets
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
+import numpy as np
 from pathlib import Path
 import multiprocessing
 
@@ -51,6 +52,7 @@ def train_and_validate(epoch, current_optimizer, current_scheduler, phase_name):
         loop = tqdm(train_dataloader,
                     desc=f"[{phase_name}] Epoch {i+1}/{epoch} [Train]")
         for images, targets in loop:
+            images, targets = images.to(device), targets.to(device)
             current_optimizer.zero_grad()
             y_logits = model(images)
             loss = loss_fn(y_logits, targets)
@@ -70,7 +72,7 @@ def train_and_validate(epoch, current_optimizer, current_scheduler, phase_name):
         with torch.inference_mode():
             test_loss, test_acc = 0, 0
             for image, targets in tqdm(test_dataloader, desc=f"[{phase_name}] Epoch {i+1}/{epoch} [Val]"):
-
+                image, targets = image.to(device), targets.to(device)
                 y_test_logits = model(image)
                 loss = loss_fn(y_test_logits, targets)
                 test_loss += loss.item()
@@ -103,17 +105,34 @@ if __name__ == '__main__':
 
     num_worker = min(multiprocessing.cpu_count(), 8)
 
+    classes = train_dataset.classes
+    print(f"Classes found: {classes}")
+
+    # Calculate weights for WeightedRandomSampler to handle class imbalance
+    class_counts = [0] * len(classes)
+    for _, index in train_dataset.samples:
+        class_counts[index] += 1
+    
+    class_weights = [1.0 / count if count > 0 else 0 for count in class_counts]
+    sample_weights = [class_weights[index] for _, index in train_dataset.samples]
+    
+    sampler = WeightedRandomSampler(
+        weights=sample_weights,
+        num_samples=len(sample_weights),
+        replacement=True
+    )
+
     train_dataloader = DataLoader(
         dataset=train_dataset, batch_size=32,
-        num_workers=num_worker, shuffle=True)
+        num_workers=num_worker, sampler=sampler)
     test_dataloader = DataLoader(
         dataset=test_dataset, batch_size=32,
         num_workers=num_worker, shuffle=False)
 
-    classes = train_dataset.classes
-    print(f"Classes found: {classes}")
-
-    model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+    model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Training on device: {device}")
+    model = model.to(device)
 
     for param in model.parameters():
         param.requires_grad = False
@@ -129,7 +148,7 @@ if __name__ == '__main__':
 
     acc_fn = Accuracy(task='multiclass', num_classes=num_classes)
     print("\n Starting phase ->> 1")
-    phase1_epochs = 5
+    phase1_epochs = 3
     optimizer_stage_1 = optim.AdamW(
         model.parameters(), lr=1e-3, weight_decay=1e-2)
     train_and_validate(phase1_epochs, optimizer_stage_1, None, "Phase 1")
@@ -137,7 +156,7 @@ if __name__ == '__main__':
     print("\n Starting phase ->> 2")
     for param in model.parameters():
         param.requires_grad = True
-    phase2_epochs = 30
+    phase2_epochs = 15
     optimizer_stage_2 = optim.AdamW(
         model.parameters(), lr=5e-5, weight_decay=1e-2)
     step_per_epoch = len(train_dataloader)

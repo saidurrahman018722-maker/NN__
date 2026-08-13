@@ -18,7 +18,9 @@ interface ResultCardProps {
 
 const ALL_CHARACTERS = [
   "amiya", "ch'en", "exusiai", "lappland", "logos",
-  "myrtle", "silverash", "surtr", "texas", "thorns"
+  "myrtle", "silverash", "surtr", "texas", "thorns",
+  "phantom", "skadi", "kal'tsit", "w", "nian",
+  "mudrock", "eyjafjalla", "saria", "ifrit", "hoshiguma"
 ];
 
 export const ResultCard: React.FC<ResultCardProps> = ({ imagePreviewUrl, imageBase64, character, onReset }) => {
