@@ -7,6 +7,10 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from pathlib import Path
 import torch.nn as nn
+import warnings
+
+# Suppress PIL palette transparency warnings for scraped images
+warnings.filterwarnings("ignore", "(?s).*Palette images with Transparency expressed in bytes should be converted to RGBA images.*", category=UserWarning)
 
 mean = (0.485, 0.456, 0.406)
 std = (0.229, 0.224, 0.225)
@@ -26,15 +30,12 @@ train_dataset = datasets.ImageFolder(root=str(TRAIN_DIR))
 test_dataset = datasets.ImageFolder(root=str(VAL_DIR), transform=val_transform)
 classes_name = train_dataset.classes
 
-model = models.resnet18(weights=None)
+model = models.convnext_tiny(weights=None)
 
-num_features = model.fc.in_features
+num_features = model.classifier[2].in_features
 num_classes = len(classes_name)
 
-model.fc = nn.Sequential(
-    nn.Dropout(p=0.4),
-    nn.Linear(num_features, num_classes)
-)
+model.classifier[2] = nn.Linear(num_features, num_classes)
 
 model.load_state_dict(torch.load(
     "arknight_character_recognization_model.pth", map_location=torch.device('cpu')))

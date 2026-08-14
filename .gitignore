@@ -1,0 +1,18 @@
+# Environments
+.venv/
+.env
+
+# Datasets
+projects/arknights_character_recognization_model/arknights_dataset/
+*.mp4
+*.png
+*.jpg
+*.jpeg
+
+# Python
+__pycache__/
+*.pyc
+
+# IDEs
+.vscode/
+.idea/
