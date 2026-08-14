@@ -14,20 +14,30 @@ CLASS_NAMES = [
     "amiya",
     "ch'en",
     "exusiai",
+    "eyjafjalla",
+    "hoshiguma",
+    "ifrit",
+    "kal'tsit",
     "lappland",
     "logos",
+    "mudrock",
     "myrtle",
+    "nian",
+    "phantom",
+    "saria",
     "silverash",
+    "skadi",
     "surtr",
     "texas",
-    "thorns"
+    "thorns",
+    "w"
 ]
 
-# Initialize the model structure
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = models.resnet18(pretrained=False)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, len(CLASS_NAMES))
+# Initialize the model structure (pure CPU mode as requested)
+device = torch.device("cpu")
+model = models.convnext_tiny(weights=None)
+num_ftrs = model.classifier[2].in_features
+model.classifier[2] = nn.Linear(num_ftrs, len(CLASS_NAMES))
 
 # Load the weights
 model_path = os.path.join(os.path.dirname(__file__), 'arknight_character_recognization_model.pth')
