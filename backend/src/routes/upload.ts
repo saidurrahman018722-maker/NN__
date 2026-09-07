@@ -85,8 +85,12 @@ router.post('/upload', upload.single('image'), async (req: Request, res: Respons
     console.error('Error during upload/prediction:', error.message || error);
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: (error as any).errors });
+    } else if (error.response?.status === 429) {
+      res.status(503).json({
+        error: 'The ML microservice is rate-limited or sleeping on Render free tier. Please try again in a minute or run locally.'
+      });
     } else {
-      res.status(500).json({ error: 'Internal server error', details: error.message });
+      res.status(500).json({ error: 'Internal server error', details: error.response?.data || error.message });
     }
   }
 });
