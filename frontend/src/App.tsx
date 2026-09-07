@@ -84,9 +84,12 @@ function App() {
     <div className="min-h-screen bg-ark-dark text-white p-6 md:p-12 font-sans selection:bg-ark-blue selection:text-white flex flex-col items-center">
       
       {/* Header */}
-      <header className="mb-12 text-center space-y-4 max-w-3xl">
-        <div className="inline-block px-4 py-1.5 rounded-full bg-ark-gray border border-white/10 text-ark-blue text-sm font-semibold tracking-widest uppercase mb-4 shadow-xl">
-          Rhodes Island Terminal
+      <header className="mb-12 text-center space-y-4 max-w-3xl flex flex-col items-center">
+        <div className="flex items-center justify-center space-x-3 mb-2">
+          <img src="/favicon.svg" alt="Arknights Rhodes Island Logo" className="w-12 h-12 md:w-16 md:h-16 drop-shadow-[0_0_15px_rgba(0,240,255,0.6)] transition-transform hover:scale-105" />
+          <div className="inline-block px-4 py-1.5 rounded-full bg-ark-gray border border-white/10 text-ark-blue text-sm font-semibold tracking-widest uppercase shadow-xl">
+            Rhodes Island Terminal
+          </div>
         </div>
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 pb-2">
           Operator Identification System
