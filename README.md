@@ -186,10 +186,3 @@ npm run dev
 ```
 
 Open your browser at `http://localhost:5173` to launch the **Rhodes Island Terminal**! 🎮
-
----
-
-## 📄 License & Disclaimer
-
-This project is open-source under the MIT License.  
-*Disclaimer: Arknights and all character assets, artwork, and character names belong to Hypergryph / Yostar. This project is built purely for educational and non-commercial machine learning demonstration purposes.*
