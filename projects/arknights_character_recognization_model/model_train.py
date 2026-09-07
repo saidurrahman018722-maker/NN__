@@ -23,7 +23,6 @@ train_transform = transforms.Compose([
     transforms.RandomCrop(224),
     transforms.RandomHorizontalFlip(),
     transforms.TrivialAugmentWide(),
-    # transforms.RandomRotation(15),
     transforms.ToTensor(),
     transforms.Normalize(mean=mean, std=std),
     transforms.RandomErasing(p=0.1)

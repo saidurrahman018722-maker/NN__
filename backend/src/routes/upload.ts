@@ -35,25 +35,20 @@ const uploadSchema = z.object({
 
 router.post('/upload', upload.single('image'), async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate file presence
     if (!req.file) {
       res.status(400).json({ error: 'No image uploaded' });
       return;
     }
 
-    // Validate using Zod
     uploadSchema.parse({ file: req.file });
-
     const file = req.file;
 
-    // Prepare form data to send to Python microservice
     const formData = new FormData();
     formData.append('file', file.buffer, {
       filename: file.originalname,
       contentType: file.mimetype,
     });
 
-    // Forward to Python microservice
     const mlServiceUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
     const mlResponse = await axios.post(`${mlServiceUrl}/predict`, formData, {
       headers: {
@@ -68,7 +63,6 @@ router.post('/upload', upload.single('image'), async (req: Request, res: Respons
       return;
     }
 
-    // Query database for character details
     const character = await prisma.character.findUnique({
       where: {
         name: predictedClass,

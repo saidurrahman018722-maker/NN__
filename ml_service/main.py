@@ -64,11 +64,9 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File provided is not an image.")
 
     try:
-        # Read image
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
         
-        # Transform and predict
         input_tensor = transform(image)
         input_batch = input_tensor.unsqueeze(0).to(device)
         
